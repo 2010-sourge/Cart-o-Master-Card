@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cartão Mastercard – Flip</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0d0f1a;
+      font-family: 'Sora', sans-serif;
+    }
+
+    /* ── Orbs de fundo ── */
+    .scene {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 {
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, #c060f0 0%, #9b30e0 40%, transparent 70%);
+      top: -80px;
+      left: calc(50% - 280px);
+      opacity: 0.75;
+    }
+    .orb-2 {
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, #d070ff 0%, #b040f0 40%, transparent 70%);
+      bottom: -60px;
+      right: calc(50% - 280px);
+      opacity: 0.7;
+    }
+
+    /* ── Wrapper com perspectiva ── */
+    .card-wrapper {
+      perspective: 1000px;
+      width: 380px;
+      height: 220px;
+      cursor: pointer;
+      position: relative;
+      z-index: 10;
+    }
+
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.75s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card-wrapper:hover .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    /* ── Face comum ── */
+    .card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow:
+        0 8px 40px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      padding: 1.5rem 1.75rem;
+      color: #fff;
+    }
+
+    /* ══════════════════════════
+       FRENTE
+    ══════════════════════════ */
+    .card-front-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.6rem;
+    }
+
+    /* Logo Mastercard */
+    .mc-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .mc-circles {
+      display: flex;
+      align-items: center;
+    }
+    .mc-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+    }
+    .mc-red   { background: #eb001b; }
+    .mc-orange { background: #f79e1b; margin-left: -14px; }
+    .mc-name {
+      font-size: 17px;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Chip */
+    .chip {
+      width: 44px;
+      height: 36px;
+      background: linear-gradient(135deg, #d4a535 0%, #f0c050 30%, #c89020 60%, #e8b840 100%);
+      border-radius: 7px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 2px;
+      padding: 5px;
+    }
+    .chip-cell { background: rgba(100, 60, 0, 0.35); border-radius: 1px; }
+    .chip-cell.mid { background: rgba(100, 60, 0, 0.15); }
+
+    /* Número */
+    .card-number-label {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.45);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+    .card-number {
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      letter-spacing: 0.14em;
+      color: rgba(255, 255, 255, 0.95);
+      margin-bottom: 1.3rem;
+    }
+
+    /* Rodapé da frente */
+    .card-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .card-holder {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: rgba(255, 255, 255, 0.85);
+    }
+    .valid-block { text-align: right; }
+    .valid-label {
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 2px;
+    }
+    .valid-date {
+      font-family: 'Space Mono', monospace;
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    /* ══════════════════════════
+       VERSO
+    ══════════════════════════ */
+    .card-back {
+      transform: rotateY(180deg);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding-top: 0;
+    }
+
+    .magnetic-strip {
+      width: calc(100% + 3.5rem);
+      height: 46px;
+      background: #111;
+      margin-left: -1.75rem;
+      margin-top: 1.2rem;
+      margin-bottom: 1.3rem;
+      border-radius: 3px;
+    }
+
+    .cvv-area { width: 100%; margin-bottom: 0.5rem; }
+    .cvv-tape {
+      background: #fff;
+      border-radius: 5px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 14px;
+    }
+    .cvv-number {
+      font-family: 'Space Mono', monospace;
+      font-size: 15px;
+      color: #1a1a1a;
+      letter-spacing: 0.2em;
+    }
+    .cvv-label {
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .back-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: auto;
+    }
+    .back-footer .signature {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.35);
+      font-style: italic;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Dica ── */
+    .hint {
+      margin-top: 1.4rem;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.3);
+      letter-spacing: 0.06em;
+      z-index: 10;
+      position: relative;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="scene">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="card-wrapper">
+    <div class="card-inner">
+
+      <!-- ══ FRENTE ══ -->
+      <div class="card-face card-front">
+        <div class="card-front-top">
+          <div class="mc-logo">
+            <div class="mc-circles">
+              <div class="mc-circle mc-red"></div>
+              <div class="mc-circle mc-orange"></div>
+            </div>
+            <span class="mc-name">Master Card</span>
+          </div>
+          <div class="chip">
+            <div class="chip-cell"></div>
+            <div class="chip-cell"></div>
+            <div class="chip-cell"></div>
+            <div class="chip-cell"></div>
+            <div class="chip-cell mid"></div>
+            <div class="chip-cell"></div>
+            <div class="chip-cell"></div>
+            <div class="chip-cell"></div>
+            <div class="chip-cell"></div>
+          </div>
+        </div>
+
+        <div class="card-number-label">Card Number</div>
+        <div class="card-number">8050 5040 2030 3020</div>
+
+        <div class="card-bottom">
+          <div class="card-holder">Prem Kumar Shahi</div>
+          <div class="valid-block">
+            <div class="valid-label">Valid Thru</div>
+            <div class="valid-date">05/28</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ VERSO ══ -->
+      <div class="card-face card-back">
+        <div class="magnetic-strip"></div>
+
+        <div class="cvv-area">
+          <div class="cvv-tape">
+            <span class="cvv-number">• • •</span>
+          </div>
+          <div class="cvv-label">CVV</div>
+        </div>
+
+        <div class="back-footer">
+          <div class="signature">Prem Kumar Shahi</div>
+          <div class="mc-circles">
+            <div class="mc-circle mc-red" style="width:28px;height:28px;"></div>
+            <div class="mc-circle mc-orange" style="width:28px;height:28px;margin-left:-11px;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /card-inner -->
+  </div><!-- /card-wrapper -->
+
+  <p class="hint">passe o mouse para virar o cartão</p>
+</div>
+
+</body>
+</html>
